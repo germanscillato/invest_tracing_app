@@ -3,6 +3,8 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+
 # from selenium.webdriver.support.select import Select
 
 
@@ -48,9 +50,9 @@ class Scraper():
 
         # Ubicación del controlador de chrome
         try:
-            self.path_chromedriver = Service(
-                r"C:\python39\virtual_env\tradebot\invest_tracing_app\chrome\chromedriver.exe"
-            )
+            #self.path_chromedriver = Service(
+            #    r"C:\python39\virtual_env\i_app\chrome\chromedriver.exe"
+            #)
             # self.argument_chrome = '--disable-blink-features=AutomationControlled'
 
             self.options_chrome = webdriver.ChromeOptions()
@@ -78,7 +80,7 @@ class Scraper():
             # inicializar chrome drive y abrir website. Tiene que ser la ultima versión.
             # , options=self.options_chrome
             # Inicializa chrome drive, y con esto la session. Para que no repita SESSION ID error.
-            self.browser = webdriver.Chrome(service=self.path_chromedriver,
+            self.browser = webdriver.Chrome(service=Service(ChromeDriverManager().install()),
                                             options=self.options_chrome)
 
             self.url = url
