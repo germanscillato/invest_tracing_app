@@ -5,8 +5,10 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 # from selenium.webdriver.support.select import Select
 
-import requests
-import lxml.html as lh
+
+
+#import requests
+#import lxml.html as lh
 
 import pandas as pd
 
@@ -27,7 +29,9 @@ file_handler.setFormatter(formatter)
 
 logger.addHandler(file_handler)
 
+
 #### ####
+
 
 
 class Scraper():
