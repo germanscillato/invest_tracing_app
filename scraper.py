@@ -48,11 +48,8 @@ class Scraper():
                 TERMINAR!!!!!!!!!!!!!!!!!!
         """
 
-        # Ubicación del controlador de chrome
         try:
-            #self.path_chromedriver = Service(
-            #    r"C:\python39\virtual_env\i_app\chrome\chromedriver.exe"
-            #)
+           
             # self.argument_chrome = '--disable-blink-features=AutomationControlled'
 
             self.options_chrome = webdriver.ChromeOptions()
