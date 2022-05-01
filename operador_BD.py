@@ -19,7 +19,7 @@ from tkinter import messagebox
 import datetime
 
 from sqlalchemy import create_engine, update
-# from sqlalchemy.orm import declarative_base
+
 from sqlalchemy.orm.session import sessionmaker
 from sqlalchemy.sql.expression import column
 from sqlalchemy.sql import func, desc
@@ -31,12 +31,18 @@ from sqlalchemy.orm import sessionmaker
 
 import pandas as pd
 
+import os
+
+
+# AUTOMATIZAR QUE ELIJA EL DIRECTORIO ACTUAL DE TRABAJO.
+BD_path = 'sqlite:///' + os.getcwd() + '\BD.db'
+
 try:
 
     # from sqlalchemy.orm import declarative_base    esta se usa en el docs
 
     engine = create_engine(
-        r'sqlite:///C:\python39\virtual_env\tradebot\tradebot_version_001\BD.db',
+        BD_path,
         echo=True)
 
     Base = declarative_base()
@@ -311,7 +317,8 @@ class Leer_resumen_portafolio():
 
 
 class Dataframe_BD():
-    """ Gestión de datos en DF a BD sqlite3. Para persistir DF, ingresar df y nombre. Realizará append si la tabla ya existe, sino crea la tabla.
+    """ Gestión de datos en DF a BD sqlite3. Para persistir DF, ingresar df y nombre. 
+    Realizará append si la tabla ya existe, sino crea la tabla.
     No persiste en BD tiempo de registro
     Para leer DF"""
 

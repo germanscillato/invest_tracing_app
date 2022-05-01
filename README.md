@@ -12,7 +12,11 @@ Descripción
     - pip install webdriver-manager # Manage Version and Path for browser.
         https://pypi.org/project/webdriver-manager/
 
-    1. Install: `pip install librerias usadas`
+    2. DataBase
+    - pip install sqlalchemy
+
+    Combination between ORM sqlalchemy and Pandas.read_sql
+
     2.
 
 ### Section 1

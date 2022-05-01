@@ -270,5 +270,9 @@ if __name__ == "__main__":
 
 
 """
+#if __name__ == "__main__":
+
+
+
 
 # temporal, va en trading_machine. Ejecuta la interfaz visual
