@@ -12,7 +12,7 @@ Generar una tabla completa con datos de portafolio global
 
 """
 # IMPORTANCIONES TEMPORALES; BORRAR una vez debug
-from scraper import Scraper
+from scraper import Source_PPI, Source_IOL
 
 ####
 from tkinter import messagebox
@@ -44,7 +44,7 @@ try:
     engine = create_engine(
         BD_path,
         echo=True)
-
+    """
     Base = declarative_base()
 
     class Tabla_Portfolio(Base):
@@ -95,12 +95,12 @@ try:
 
     # fabrica para las sesiones a definir mas adelante.
     Session = sessionmaker(bind=engine)
-
+    """
 except Exception as e:
     print(e)
     messagebox.showinfo("Error", e)
 
-
+"""
 class Agregar_portafolio():
 
     def __init__(self, portafolio):
@@ -170,36 +170,43 @@ class Agregar_bco():
         except Exception as e:
             print(e)
             messagebox.showinfo("Error", e)
-
+"""
 
 class Agregar_externos():
     """A utilizar 1 vez, actualizar valores solamente"""
 
     def __init__(self):
 
-        sqlite_connection = engine.connect()
+        # With statement close connection. Oficial docs. 
+        # https://docs.sqlalchemy.org/en/13/core/connections.html
+        try: 
+        
+            with engine.connect() as conn:
+                
+                df = pd.read_csv("usd_ext.csv",
+                            sep=";",
+                            dtype={
+                                0: str,
+                                1: float,
+                                2: str,
+                                3: str
+                            })  # sino los importa como str,parse_dates=True
 
-        df = pd.read_csv("usd_ext.csv",
-                         sep=";",
-                         dtype={
-                             0: str,
-                             1: float,
-                             2: str,
-                             3: str
-                         })  # sino los importa como str,parse_dates=True
+                sqlite_table = "usd_ext"
+            
 
-        sqlite_table = "usd_ext"
+                df.to_sql(name=sqlite_table, con=conn, if_exists='fail')
+        except Exception as e:
+            print(e) 
 
-        df.to_sql(name=sqlite_table, con=sqlite_connection, if_exists='fail')
-
-        sqlite_connection.close()
+        
 
 
 ################ ON #########################
-
+"""
 
 class Agregar_ON():
-    """A utilizar 1 vez, actualizar valores cotizacion"""
+    #A utilizar 1 vez, actualizar valores cotizacion
 
     def __init__(self):
 
@@ -252,29 +259,31 @@ class Cot_usd_BD():
         except Exception as e:
             print(e)
             messagebox.showinfo("Error", e)
-
+"""
 
 class Leer_portafolio():
     # https://pandas.pydata.org/docs/reference/api/pandas.read_sql.html
     def dataframe(self):
 
-        try:
+        try: 
+        
+            with engine.connect() as conn:
 
-            # session = Session()
-            # df = session.query(Tabla_Portfolio)
+                # session = Session()
+                # df = session.query(Tabla_Portfolio)
 
-            df = pd.read_sql('SELECT * FROM Portfolio_api', engine)
-            # print(df)
-            return df
+                df = pd.read_sql('SELECT * FROM Portfolio_api', conn)
+                # print(df)
+                return df
 
         except Exception as e:
             messagebox.showinfo("Error", e)
 
-
+"""
 class Leer_resumen_portafolio():
 
     def resumen_portafolio(self):
-        " devuelve DF resumen de activos, en ARS y usd, + valor usd ultimo"
+        #devuelve DF resumen de activos, en ARS y usd, + valor usd ultimo"
         try:
 
             on = pd.read_sql(
@@ -314,7 +323,7 @@ class Leer_resumen_portafolio():
 
         except Exception as e:
             print(e)
-
+"""
 
 class Dataframe_BD():
     """ Gestión de datos en DF a BD sqlite3. Para persistir DF, ingresar df y nombre. 
@@ -322,19 +331,17 @@ class Dataframe_BD():
     No persiste en BD tiempo de registro
     Para leer DF"""
 
-    # def _init_(self):
-
-    engine = create_engine(
-        r'sqlite:///C:\python39\virtual_env\tradebot\tradebot_version_001\BD.db',
-        echo=True)
-
+    
     def persistir_df(self, df, nombre_tabla):
         try:
-
-            df.to_sql(name=nombre_tabla,
-                      con=engine.connect(),
-                      if_exists='append',
-                      index=False)
+            
+        
+            with engine.connect() as conn:
+                df.to_sql(name=nombre_tabla,
+                        con=conn,
+                        if_exists='append',
+                        index=False)
+        
         except Exception as e:
             print(e)
 
@@ -342,17 +349,17 @@ class Dataframe_BD():
         """Lee ticker, ult cotizacion, volumen, variacion diaria, fecha de registro.
         Ingresar nombre tabla."""
         try:
+            with engine.connect() as conn:
+                self.sql = (f'SELECT {nombre_tabla}.ticker, '
+                            f'{nombre_tabla}.precio_cierre, '
+                            f'{nombre_tabla}.variacion_diaria, '
+                            f'{nombre_tabla}.volumen, '
+                            f'{nombre_tabla}.fecha_registro '
+                            f' FROM {nombre_tabla}')
 
-            self.sql = (f'SELECT {nombre_tabla}.ticker, '
-                        f'{nombre_tabla}.precio_cierre, '
-                        f'{nombre_tabla}.variacion_diaria, '
-                        f'{nombre_tabla}.volumen, '
-                        f'{nombre_tabla}.fecha_registro '
-                        f' FROM {nombre_tabla}')
+                self.df = pd.read_sql(sql=self.sql, con=conn)
 
-            self.df = pd.read_sql(sql=self.sql, con=engine)
-
-            return self.df
+                return self.df
         except Exception as e:
             print(e)
 
@@ -360,18 +367,12 @@ class Dataframe_BD():
 # rpueba de funcionamiento
 if __name__ == "__main__":
 
-    #data = Dataframe_BD()
-    # print(data.leer_df_basico("cotizacion_opciones"))
-    scraper = Scraper()
-    df = scraper.cotizacion_dolar_hoy()
-    # data.persistir_df(df=df,
-    #                  nombre_tabla="Cotizacion_Bonos_arg")
-
-    cot_dolar = Cot_usd_BD()
-    cot_dolar.persistir(df)
+    ppi = Source_PPI()
+    #iol = Source_IOL()
+    df = ppi.scraper_ppi("cedear")
+    
+    df_bd = Dataframe_BD()
+    df_bd.persistir_df(df,"ced_arg_prueba" )
+   
+    #df.to_csv(os.getcwd())
     print(df)
-    #df = portafolio.dataframe()
-    #print(df, "prueba")
-    # iol = IOL_broker()
-    # portafolio = iol.get_portafolio()
-    # agregar_datos = Agregar_portafolio(portafolio)
