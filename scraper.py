@@ -1,22 +1,16 @@
-# pip install selenium
+
+
+import pandas as pd
+import random as random
+import datetime as datetime
+from time import sleep
+
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
-# from selenium.webdriver.support.select import Select
-
-
-
-#import requests
-#import lxml.html as lh
-
-import pandas as pd
-
-import random as random
-import datetime as datetime
-from time import sleep
 
 #### CONFIG LOGGING ####
 import logging
