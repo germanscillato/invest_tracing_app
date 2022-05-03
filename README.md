@@ -21,4 +21,18 @@ Descripción
 
 ### Section 1
 
-Scraper...
+Scraper: Source PPI and IOL for
+{
+'bond':
+'https://iol.invertironline.com/mercado/cotizaciones/argentina/bonos/todos',
+'cedear':
+'https://iol.invertironline.com/mercado/cotizaciones/argentina/cedears/todos',
+'options':
+'https://iol.invertironline.com/mercado/cotizaciones/argentina/opciones/todas',
+'futures':
+'IOL no tiene cotización futuros',
+'stock':
+'https://iol.invertironline.com/mercado/cotizaciones/argentina/acciones',
+'adr':
+'https://iol.invertironline.com/mercado/cotizaciones/estados-unidos/adrs/argentina'
+}
