@@ -17,7 +17,7 @@ logger.setLevel(logging.DEBUG)
 
 formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(name)s:%(message)s')
 
-file_handler = logging.FileHandler('gestor_datos.log')
+file_handler = logging.FileHandler('Controller.log')
 file_handler.setFormatter(formatter)
 
 logger.addHandler(file_handler)
@@ -26,7 +26,7 @@ logger.addHandler(file_handler)
 #### ####
 
 
-class Gestor_datos():
+class Controller():
     """ Genera importanción, llama a broker para conexión API y
      llama BD para grabar  """
 
@@ -198,7 +198,7 @@ class Visualizacion():
 
         # portafolio = Leer_portafolio()
         #self.df = portafolio.dataframe()
-        self.df = gestor_datos.portafolio_general()
+        self.df = Controller.portafolio_general()
 
         interfaz_visual(self.df)
 """
@@ -206,7 +206,7 @@ class Visualizacion():
 # Prueba de funcionamiento
 if __name__ == "__main__":
 
-    gestor_datos = Gestor_datos()
-    gestor_datos.security_selector(source= "PPI" , security= "bond")
+    Controller = Controller()
+    Controller.security_selector(source= "PPI" , security= "bond")
     
 
