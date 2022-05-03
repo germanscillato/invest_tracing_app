@@ -9,7 +9,7 @@ from scraper import Source_PPI ,Source_IOL
 #from visualizador import interfaz_visual
 
 
-#### CONFIG LOGGING ####
+#### CONFIG LOGGING ########
 import logging
 
 logger = logging.getLogger(__name__)
