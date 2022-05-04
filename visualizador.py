@@ -4,15 +4,17 @@
 import dash
 from dash.dependencies import Input, Output
 import dash_table
-import dash_core_components as dcc
-import dash_html_components as html
-import plotly.express as px
+from dash import dcc # Renderiza los objetos
+from dash import html # Renderizar HTML en el browser
+import plotly.express as px # Para graficar 
 import pandas as pd
 
-df = pd.read_csv("inv.csv", sep=";",
+df = pd.read_csv("data/inv.csv", sep=";",
                  dtype={0: str, 1: str, 2: float, 3: float, 4: float, 5: float,
                         6: float, 7: float, 8: float}  # sino los importa como str,
                  )
+
+
 
 
 def interfaz_visual(df):
@@ -26,7 +28,7 @@ def interfaz_visual(df):
         'background': '#111111',
         'text': '#7FDBFF'}
 
-    fig = px.pie(df, values='valorizado', names='simbolo', hole=0.4)
+    fig = px.pie(df, values='capital', names='ticker', hole=0.4)
 
     # leer docs https://plotly.com/python/reference/pie/
     # agrego etiqueta dentro del graf
@@ -48,6 +50,7 @@ def interfaz_visual(df):
     # aca van dash components
 
     # hot_reloading, actualiza solo modificaciones del código o de los datos.
+    # html.div = crea una "caja" en HTML
     app.layout = html.Div(style={'backgroundColor': colors['background']}, children=[
 
         html.H1("PORTAFOLIO INVERSION", style={
@@ -180,7 +183,7 @@ def interfaz_visual(df):
 
 # para ejecutarlo
 
-# interfaz_visual(df)
+interfaz_visual(df)
 
-# if __name__ == '__main__':
-#    running_app = Run_visuals()
+#if __name__ == '__main__':
+  # running_app = Run_visuals()

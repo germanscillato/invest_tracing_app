@@ -49,7 +49,7 @@ if __name__ == "__main__":
 
     t_inicio = datetime.time(hour=11, minute=00, second=0)
 
-    t_final = datetime.time(hour=21, minute=30, second=0)
+    t_final = datetime.time(hour=17, minute=30, second=0)
 
     ppi = Source_PPI()
     iol = Source_IOL()
