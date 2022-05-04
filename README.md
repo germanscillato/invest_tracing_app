@@ -17,7 +17,8 @@ Descripción
 
     Combination between ORM sqlalchemy and Pandas.read_sql
 
-    2.
+    3.Visuals
+    - pip install dash
 
 ### Section 1
 

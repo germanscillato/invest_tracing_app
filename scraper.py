@@ -529,8 +529,8 @@ class Source_IOL(Source):
 if __name__ == "__main__":
 
     iol = Source_IOL()
-    df = iol.scraper_iol("bond")
-    df2 = iol.scraper_iol("cedear")
+    df = iol.scraper_iol("stock")
+    #df2 = iol.scraper_iol("cedear")
     print(df)
 
     #df.to_csv(r'C:/python39/virtual_env/tradebot/df.csv', index=False)

@@ -64,11 +64,11 @@ class Controller():
                 nombre_tabla=self.nombre_tabla)
 
             except Exception as e:
-                logger.exception('Persistir {security} y source {source} error: {}'.format(e))
+                logger.exception('Persistir {} y source {} error: {}'.format(security,source,e))
 
 
         else: 
-            logger.exception('Cargar Security o Source correcta: {source} {security}')
+            logger.exception('Cargar Security o Source correcta: {} {}'.format(security,source))
 
 
     # armar esto con herencia o decoradores
@@ -207,6 +207,7 @@ class Visualizacion():
 if __name__ == "__main__":
 
     Controller = Controller()
-    Controller.security_selector(source= "PPI" , security= "bond")
+    Controller.security_selector(source= "PPI" ,
+     security= "bond")
     
 
