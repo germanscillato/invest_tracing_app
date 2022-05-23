@@ -147,18 +147,11 @@ class Dataframe_BD():
             print(e)
 
     def leer_df_basico(self, nombre_tabla):
-        """Lee ticker, ult cotizacion, volumen, variacion diaria, fecha de registro.
-        Ingresar nombre tabla."""
+        """ Ingresar nombre tabla. Trae tabla completa sin query"""
         try:
             with engine.connect() as conn:
-                self.sql = (f'SELECT {nombre_tabla}.ticker, '
-                            f'{nombre_tabla}.precio_cierre, '
-                            f'{nombre_tabla}.variacion_diaria, '
-                            f'{nombre_tabla}.volumen, '
-                            f'{nombre_tabla}.fecha_registro '
-                            f' FROM {nombre_tabla}')
 
-                self.df = pd.read_sql(sql=self.sql, con=conn)
+                self.df = pd.read_sql(sql=nombre_tabla, con=conn)
 
                 return self.df
         except Exception as e:
@@ -168,6 +161,11 @@ class Dataframe_BD():
 # rpueba de funcionamiento
 if __name__ == "__main__":
 
+    df_bd = Dataframe_BD()
+    df = df_bd.leer_df_basico("bond_price")
+    print(df)
+
+    """
     ppi = Source_PPI()
     #iol = Source_IOL()
     df = ppi.scraper_ppi("cedear")
@@ -177,3 +175,4 @@ if __name__ == "__main__":
    
     #df.to_csv(os.getcwd())
     print(df)
+"""
