@@ -44,133 +44,11 @@ try:
     engine = create_engine(
         BD_path,
         echo=True)
-    """
-    Base = declarative_base()
 
-    class Tabla_Portfolio(Base):
-        __tablename__ = 'Portfolio_api'
-
-        id = Column(Integer, primary_key=True)
-        simbolo = Column(String(100))
-        cantidad = Column(Float)
-        puntosVariacion = Column(Float)
-        variacionDiaria = Column(Float)
-        ultimoPrecio = Column(Float)
-        precioCompra = Column(Float)
-        ganaciaPorcentaje = Column(Float)
-        ganaciaDinero = Column(Float)
-        valorizado = Column(Float)
-        descripcion = Column(String(100))
-        pais = Column(String(100))
-        mercado = Column(String(20))
-        tipo = Column(String(20))
-        plazo = Column(String(10))
-        moneda = Column(String(20))
-        fecha_registro = Column(DateTime)
-
-    class Tabla_Banco(Base):
-        __tablename__ = 'PF_Banco_historicos'
-
-        id = Column(Integer, primary_key=True)
-        simbolo = Column(String)
-        cantidad = Column(Float)
-        tasa_esperada = Column(Float)
-        tasa_real = Column(Float)
-        plazo = Column(Float)
-        fecha_inicio = Column(Date)
-        fecha_cierre = Column(Date)
-        renta_TNA = Column(Float)
-        moneda = Column(String)
-
-    class Tabla_Cotizacion_Dolar(Base):
-        __tablename__ = 'Cotizacion_Dolar'
-
-        id = Column(Integer, primary_key=True)
-        Moneda = Column(String)
-        Precio_compra = Column(Float)
-        Precio_venta = Column(Float)
-        fecha = Column(DateTime)
-
-    Base.metadata.create_all(engine)
-
-    # fabrica para las sesiones a definir mas adelante.
-    Session = sessionmaker(bind=engine)
-    """
 except Exception as e:
     print(e)
     messagebox.showinfo("Error", e)
 
-"""
-class Agregar_portafolio():
-
-    def __init__(self, portafolio):
-
-        try:
-
-            session = Session()
-            # Borro la tabla para re escribirla. VEr si hacer el commit esta bien o es mas adelante!!!
-            session.query(Tabla_Portfolio).delete()
-            session.commit()
-
-            for i in range(0, len(portafolio)):
-                port = Tabla_Portfolio()
-                port.simbolo = portafolio.iloc[i, 0]
-                port.cantidad = portafolio.iloc[i, 1]
-                port.puntosVariacion = portafolio.iloc[i, 3]
-                port.variacionDiaria = portafolio.iloc[i, 4]
-                port.ultimoPrecio = portafolio.iloc[i, 5]
-                port.precioCompra = portafolio.iloc[i, 6]
-                port.ganaciaPorcentaje = portafolio.iloc[i, 7]
-                port.ganaciaDinero = portafolio.iloc[i, 8]
-                port.valorizado = portafolio.iloc[i, 9]
-                port.descripcion = portafolio.iloc[i, 11]
-                port.pais = portafolio.iloc[i, 12]
-                port.mercado = portafolio.iloc[i, 13]
-                port.tipo = portafolio.iloc[i, 14]
-                port.plazo = portafolio.iloc[i, 15]
-                port.moneda = portafolio.iloc[i, 16]
-                # datetime.datetime.now().replace(second=0, microsecond=0)
-                port.fecha_registro = datetime.datetime.now().date()
-                session.add(port)
-
-            session.commit()
-            session.close()
-
-        except Exception as e:
-            messagebox.showinfo("Error", e)
-
-
-class Agregar_bco():
-
-    def __init__(self, df_banco):
-
-        try:
-
-            session = Session()
-            for i in range(0, len(df_banco)):
-
-                port = Tabla_Banco()
-                port.simbolo = df_banco.iloc[i, 0]
-                port.cantidad = df_banco.iloc[i, 1]
-                port.tasa_esperada = df_banco.iloc[i, 2]
-                port.tasa_real = df_banco.iloc[i, 3]
-                port.plazo = df_banco.iloc[i, 4]
-                # https://strftime.org/  grabo con dayfirst, y date() toma solo fecha
-                port.fecha_inicio = pd.to_datetime(df_banco.iloc[i, 5],
-                                                   dayfirst=True).date()
-                port.fecha_cierre = pd.to_datetime(df_banco.iloc[i, 6],
-                                                   dayfirst=True).date()
-                port.renta_TNA = df_banco.iloc[i, 7]
-                port.moneda = df_banco.iloc[i, 8]
-                session.add(port)
-
-            session.commit()
-            session.close()
-
-        except Exception as e:
-            print(e)
-            messagebox.showinfo("Error", e)
-"""
 
 class Agregar_externos():
     """A utilizar 1 vez, actualizar valores solamente"""
@@ -204,38 +82,6 @@ class Agregar_externos():
 
 ################ ON #########################
 """
-
-class Agregar_ON():
-    #A utilizar 1 vez, actualizar valores cotizacion
-
-    def __init__(self):
-
-        sqlite_connection = engine.connect()
-
-        df = pd.read_csv("on.csv",
-                         sep=";",
-                         dtype={
-                             0: str,
-                             1: float,
-                             2: float,
-                             3: float,
-                             4: float,
-                             5: str,
-                             6: str,
-                             7: str,
-                             8: str,
-                             9: str
-                         })
-
-        sqlite_table = "Obligaciones_Negociables"
-
-        df.to_sql(name=sqlite_table, con=sqlite_connection, if_exists='fail')
-
-        sqlite_connection.close()
-
-        ################ COT DOLAR ################################
-
-
 class Cot_usd_BD():
 
     def persistir(self, df):
@@ -279,51 +125,6 @@ class Leer_portafolio():
         except Exception as e:
             messagebox.showinfo("Error", e)
 
-"""
-class Leer_resumen_portafolio():
-
-    def resumen_portafolio(self):
-        #devuelve DF resumen de activos, en ARS y usd, + valor usd ultimo"
-        try:
-
-            on = pd.read_sql(
-                'SELECT Obligaciones_Negociables.simbolo, Obligaciones_Negociables.cantidad, Obligaciones_Negociables.moneda FROM Obligaciones_Negociables',
-                engine)
-            usd_ext = pd.read_sql(
-                'SELECT usd_ext.simbolo, usd_ext.cantidad , usd_ext.moneda FROM usd_ext',
-                engine)
-
-            session = Session()
-
-            port_api = pd.DataFrame(session.query(
-                Tabla_Portfolio.simbolo, Tabla_Portfolio.valorizado,
-                Tabla_Portfolio.moneda).all(),
-                                    columns=on.columns)
-            PF = pd.DataFrame(session.query(
-                Tabla_Banco.simbolo, Tabla_Banco.cantidad,
-                Tabla_Banco.moneda).filter(
-                    Tabla_Banco.fecha_cierre > datetime.datetime.now().date()).
-                              all(),
-                              columns=on.columns)
-
-            usd_precio = session.query(
-                Tabla_Cotizacion_Dolar.Precio_compra).order_by(
-                    desc(Tabla_Cotizacion_Dolar.fecha)).filter(
-                        Tabla_Cotizacion_Dolar.Moneda == "Mep").first()[
-                            0]  # sale solo el float
-
-            session.commit()
-            session.close()
-            # consolida todo en un solo df.
-            port_general = pd.DataFrame()
-
-            port_general = port_general.append([on, usd_ext, port_api, PF],
-                                               ignore_index=True)
-            return port_general, usd_precio
-
-        except Exception as e:
-            print(e)
-"""
 
 class Dataframe_BD():
     """ Gestión de datos en DF a BD sqlite3. Para persistir DF, ingresar df y nombre. 

@@ -37,3 +37,9 @@ Scraper: Source PPI and IOL for
 'adr':
 'https://iol.invertironline.com/mercado/cotizaciones/estados-unidos/adrs/argentina'
 }
+
+### Section ... Calculations
+
+Current Yield= Annual Coupon Payment / Bond Price
+
+​
