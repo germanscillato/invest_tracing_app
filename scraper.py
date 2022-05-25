@@ -242,7 +242,8 @@ class Source_PPI(Source):
                 self.x = self.x.replace(year=datetime.datetime.now().year,
                                         month=datetime.datetime.now().month,
                                         day=datetime.datetime.now().day)
-
+            
+            
             return self.x
         except Exception as e:
             logger.exception('Exception formato fecha: {}'.format(e))
@@ -526,11 +527,113 @@ class Source_IOL(Source):
                 security, self.url, e))
 
 
+class Dolar(Source):
+    """ completar     """
+
+    def __init__(self):
+        super().__init__()
+
+        # DEFINICION PARAMETROS A UTILZIAR PARA scrap dolar
+        # General
+        self.xpath = f'//table[@class="table table-hover table-striped cotizacionestb dataTable no-footer"]/tbody/tr/td'
+        self.url_bolsa= f'https://iol.invertironline.com/mercado/cotizaciones/argentina/monedas' 
+        self.url_blue =f'https://www.dolarhoy.com/'
+
+        self.xpath_blue = ['//*[@id="home_0"]/div[2]/section/div/div/div/div[1]/div/div[1]/div/div[1]/div[1]/div[2]'
+        ,'//*[@id="home_0"]/div[2]/section/div/div/div/div[1]/div/div[1]/div/div[1]/div[2]/div[2]',
+         '//*[@id="home_0"]/div[2]/section/div/div/div/div[1]/div/div[1]/div/div[2]/span'
+        ]
+        self.col_web = [i for i in range(1,5)]
+        self.col_nombre = ["moneda" , "compra" , "venta" , "fecha"]
+    def scraper_dolar(self):
+        """
+        completar.
+
+        """
+        # llamado por herencia a metodo de 'conexión con browser' de super clase 'Scraper'
+        
+        self.con_browser(self.url_bolsa)
+        # def dictionary for results
+        
+        try:
+            # Metodo iter_browser es heredado de clase Scraper
+          
+            logger.info(
+                "scrap: dolar URL: ".format(self.url_bolsa))
+            self.df_dolar = self.iter_browser(self.col_web, self.xpath,self.col_nombre)
+
+        except Exception as e:
+            logger.exception('Exception en scrap de dolar', e)
+
+        # cierre browser con método heredado de clase Scraper
+        self.close_browser()
+        
+        #Conecta con dolarhoy para obtener dato dolar Blue. 
+        
+        # En caso de usar una vez mas scrap algo puntual, armar una nueva func en clase padre para hacer esto:
+
+        self.browser = webdriver.Chrome(service=Service(ChromeDriverManager().install()),
+                                            options=self.options_chrome)
+        self.browser.get(self.url_blue)
+        sleep(5)
+        try:
+            # Metodo iter_browser es heredado de clase Scraper
+
+            logger.info("scrap: dolar URL: ".format(self.url_blue))
+            self.blue_usd = ["blue"]  
+            for xpath in self.xpath_blue:
+
+                self.data_web = self.browser.find_elements(by=By.XPATH,
+                                                       value=xpath)
+                # convierto cada item de cada lista en text, desde webelemnt de selenium
+
+                self.data_web = [item.text for item in self.data_web]
+                self.blue_usd.append(self.data_web[0])
+                
+            
+            logger.info("convierte datos scrap ")
+            
+            self.df_blue = pd.DataFrame(self.blue_usd, index=self.col_nombre).transpose()
+        
+
+        except Exception as e:
+            logger.exception('Exception en scrap de dolar blue', e)
+
+        # cierre browser con método heredado de clase Scraper
+
+        self.browser.close()
+        
+        logger.debug("Inicia transformación de datos")
+        self.ccl_mep = [i for i in range(1, 6)]
+        # Descarto ultima columna: Variaciones
+        self.df_dolar = self.df_dolar.iloc[self.ccl_mep,:]
+        logger.debug("Paso 2: Formato fecha")
+        self.df_dolar["fecha"]= self.df_dolar["fecha"].apply(
+                lambda x: datetime.datetime.strptime(x, '%d/%m/%Y %H:%M:%S'))
+
+
+        logger.debug("Paso 3: Dolar blue limpio datos")
+        mask_blue = ["compra","venta"]
+        # elimina simbolo pesos
+        self.df_blue[mask_blue]= self.df_blue[mask_blue].applymap(
+                lambda x: x.replace("$", ""))
+        # elimina texto de dato de fecha
+        self.df_blue["fecha"]= self.df_blue["fecha"].apply(
+                lambda x: x.replace("Actualizado el ", ""))
+        # convierte a formato datetime
+        self.df_blue["fecha"]= self.df_blue["fecha"].apply(
+                lambda x: datetime.datetime.strptime(x, '%d/%m/%y %I:%M %p'))
+
+        self.df_dolar = pd.concat([self.df_dolar, self.df_blue],axis=0)
+        
+        return self.df_dolar
+
+
 if __name__ == "__main__":
 
-    iol = Source_IOL()
-    df = iol.scraper_iol("stock")
-    #df2 = iol.scraper_iol("cedear")
+    usd = Dolar()
+    df = usd.scraper_dolar()
+
     print(df)
 
     #df.to_csv(r'C:/python39/virtual_env/tradebot/df.csv', index=False)
