@@ -12,6 +12,8 @@ Generar una tabla completa con datos de portafolio global
 
 """
 # IMPORTANCIONES TEMPORALES; BORRAR una vez debug
+from email import header
+from wsgiref import headers
 from scraper import Source_PPI, Source_IOL
 
 ####
@@ -30,7 +32,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 import pandas as pd
-
+from tabulate import tabulate
 import os
 
 
@@ -105,26 +107,25 @@ class Cot_usd_BD():
         except Exception as e:
             print(e)
             messagebox.showinfo("Error", e)
-"""
+
 
 class Leer_portafolio():
-    # https://pandas.pydata.org/docs/reference/api/pandas.read_sql.html
+
     def dataframe(self):
 
         try: 
         
             with engine.connect() as conn:
 
-                # session = Session()
-                # df = session.query(Tabla_Portfolio)
+
 
                 df = pd.read_sql('SELECT * FROM Portfolio_api', conn)
-                # print(df)
+    
                 return df
 
         except Exception as e:
             messagebox.showinfo("Error", e)
-
+"""
 
 class Dataframe_BD():
     """ Gestión de datos en DF a BD sqlite3. Para persistir DF, ingresar df y nombre. 
@@ -133,12 +134,12 @@ class Dataframe_BD():
     Para leer DF"""
 
     
-    def persistir_df(self, df, nombre_tabla):
+    def persistir_df(self, df, table_name):
         try:
             
         
             with engine.connect() as conn:
-                df.to_sql(name=nombre_tabla,
+                df.to_sql(name=table_name,
                         con=conn,
                         if_exists='append',
                         index=False)
@@ -146,33 +147,49 @@ class Dataframe_BD():
         except Exception as e:
             print(e)
 
-    def leer_df_basico(self, nombre_tabla):
+    def leer_df_basico(self, table_name):
         """ Ingresar nombre tabla. Trae tabla completa sin query"""
         try:
             with engine.connect() as conn:
 
-                self.df = pd.read_sql(sql=nombre_tabla, con=conn)
+                self.df = pd.read_sql(sql=table_name, con=conn)
+
+                return self.df
+        except Exception as e:
+            print(e)
+
+    def table_query(self,table_name):
+        """ Ingresar nombre tabla y query a solicitar"""
+        col ="tipo, simbolo, fechaOperada,"
+        col_agg_func = "cantidadOperada, precioOperado"
+        # FALTA: groupbygroupb
+
+        query = '''SELECT tipo,
+                        simbolo,
+                        fechaOperada,
+                        SUM(cantidadOperada),
+                        AVG(precioOperado)
+                FROM {}
+                WHERE estado = 'terminada' AND tipo IN ('Compra' , 'Venta')
+                GROUP BY "cantidadOperada", "precioOperado"
+                ORDER BY fechaOperada ASC
+                
+                '''.format(table_name)
+        try:
+            with engine.connect() as conn:
+
+                self.df = pd.read_sql_query(sql=query, con=conn)
 
                 return self.df
         except Exception as e:
             print(e)
 
 
-# rpueba de funcionamiento
+# pueba de funcionamiento
 if __name__ == "__main__":
 
     df_bd = Dataframe_BD()
-    df = df_bd.leer_df_basico("bond_price")
-    print(df)
-
-    """
-    ppi = Source_PPI()
-    #iol = Source_IOL()
-    df = ppi.scraper_ppi("cedear")
-    
-    df_bd = Dataframe_BD()
-    df_bd.persistir_df(df,"ced_arg_prueba" )
-   
-    #df.to_csv(os.getcwd())
-    print(df)
-"""
+    df = df_bd.table_query("operaciones_IOL")
+    print("\n",tabulate(df.head(20),
+    headers = 'keys' ,
+     tablefmt = "grid"))

@@ -1,12 +1,10 @@
 
 import pandas as pd
 
-#from broker import IOL_broker
+from broker import IOL_broker
 from operador_BD import Dataframe_BD
 from scraper import Source_PPI ,Source_IOL
 
-# TEMPORAL; ESTO VA EN LA APP TRADING MACHINE
-#from visualizador import interfaz_visual
 
 
 #### CONFIG LOGGING ########
@@ -34,6 +32,7 @@ class Controller():
         self.ppi = Source_PPI()
         self.iol = Source_IOL()
         self.dataframe_BD = Dataframe_BD()
+
 
     def security_selector(self, source,security):
         """
@@ -173,11 +172,9 @@ class Controller():
 
     def operaciones_api(self):
         # Trae portafolio desde api
-        ope = self.broker.get_operaciones()()
-        # falta agregar fecha a traer,
+        ope = self.broker.get_operaciones()
+        
 
-        # agregar otras operaciones por API.
-        # uniría todo en 1 solo df, return ese df
         return ope    
     
     """
@@ -205,9 +202,10 @@ class Visualizacion():
 
 # Prueba de funcionamiento
 if __name__ == "__main__":
-
+    # HACER ESTO MISMO PERO VERIFICANDO LA ULTIMA QUE NO ESTE. 1 vez pordia
     Controller = Controller()
-    Controller.security_selector(source= "PPI" ,
-     security= "bond")
-    
+    Controller.Activar_Broker()
+    df = Controller.operaciones_api()
+    Controller.dataframe_BD.persistir_df(df=df,
+     table_name= "operaciones_IOL")
 
