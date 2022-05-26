@@ -136,8 +136,12 @@ class Dataframe_BD():
     """ Gestión de datos en DF a BD sqlite3. Para persistir DF, ingresar df y nombre. 
     Realizará append si la tabla ya existe, sino crea la tabla.
     No persiste en BD tiempo de registro
-    Para leer DF"""
+    Para leer DF
+    
+    Optimizaciones: Query operations haga el doble index
+    """
     def __init__(self):
+
         self.query_list ={
             "operaciones" : '''SELECT tipo,
                             simbolo,
@@ -159,7 +163,11 @@ class Dataframe_BD():
                         GROUP BY fecha ,ticker
                         ORDER BY fecha ASC'''
             }
-
+    def str_to_date(self,x):
+        """func para convertir str to date en index de dataframe con doble index"""
+        return datetime.datetime.fromisoformat(str(x)).date()
+    
+    
     def persistir_df(self, df, table_name):
         try:
             
@@ -278,21 +286,67 @@ class Dataframe_BD():
             # Reemplaza query_list para evitar
             query = query_list.replace("insertar_tabla",table)
             df = pd.concat([df,self.table_query(query)], axis = 0)
+        
+        df["fecha"]= df["fecha"].apply(lambda x : self.str_to_date(x))
+        
+
         return df
 
 if __name__ == "__main__":
 
     df_bd = Dataframe_BD()
     df = df_bd.ticker_price_historico(["AL29" ,"BA37D" ])
-    df2 = df_bd.table_query(df_bd.query_list["operaciones"])
     print("\n",tabulate(df,
     headers = 'keys' ,
     tablefmt = "grid")
       )
+
+    print(type(df.loc[0,"fecha"]),
+    df.loc[0,"fecha"])
+    
+    """
+
+    
+    df2 = df_bd.table_query(df_bd.query_list["operaciones"])
+    
     print("\n",tabulate(df2,
     headers = 'keys' ,
     tablefmt = "grid")
       )
-    """    df_bd.ticker_loc_json()
+    
+    df2.rename(columns={"SUM(cantidadOperada)": "cantidadOperada" ,
+                        "AVG(precioOperado)":"precioOperado" } 
+                        ,inplace=True)
+
+    operations = pd.pivot_table(data = df2 ,
+            values = ["cantidadOperada" ,"precioOperado" ],
+            index = ["fechaOperada" , "simbolo"] ,
+            aggfunc = {"cantidadOperada" : "sum" ,
+             "precioOperado": "mean"} )
+    
+    print("\n",tabulate(df2,
+    headers = 'keys' ,
+    tablefmt = "grid")
+      )
+    mov_capital =  operations['cantidadOperada']*operations['precioOperado']
+        #elimino index de simbolo (ya no aplica por los sume, estan por fecha)
+    mov_capital= mov_capital.droplevel(level=1,axis=0)
+        # Agrupo por fecha
+    mov_capital = mov_capital.groupby(by = "fechaOperada").agg("sum")
+
+    mov_capital.name = "ingresoCapital"
+    print(type(mov_capital.index[0]),mov_capital.index[0])
+    def str_to_date(x):
+        "func para convertir str to date en index de dataframe con doble index"
+        return datetime.datetime.fromisoformat(str(x)).date()
+    
+    index_cap = pd.Series(mov_capital.index)
+    mov_capital.index = index_cap. \
+    apply(lambda x : str_to_date(x))
+    print(mov_capital)
+    print(type(mov_capital.index[0]),mov_capital.index[0])
+    df_bd.ticker_loc_json()
     res = df_bd.ticker_loc_check(["AL29" ,"BA37D" ])
-    print(res)"""
+    print(res)
+
+    """
