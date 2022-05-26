@@ -45,7 +45,8 @@ class my_thread(threading.Thread):
 
 
 if __name__ == "__main__":
-    # acomodar esto
+    # AGREGAR: CHEQUEO DE TICKER LIST cada 1 semana (actualizar JSON). 
+    # Chequeo de operaciones 1 vez por día a la noche. 
 
     t_inicio = datetime.time(hour=11, minute=00, second=0)
 

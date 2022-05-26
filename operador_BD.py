@@ -17,6 +17,8 @@ from wsgiref import headers
 from scraper import Source_PPI, Source_IOL
 
 ####
+import json
+
 from tkinter import messagebox
 import datetime
 
@@ -50,6 +52,9 @@ try:
 except Exception as e:
     print(e)
     messagebox.showinfo("Error", e)
+
+
+
 
 
 class Agregar_externos():
@@ -132,8 +137,26 @@ class Dataframe_BD():
     Realizará append si la tabla ya existe, sino crea la tabla.
     No persiste en BD tiempo de registro
     Para leer DF"""
+    def __init__(self):
+        self.query_list ={"operaciones" : '''SELECT tipo,
+                    simbolo,
+                    fechaOperada,
+                    SUM(cantidadOperada),
+                    AVG(precioOperado)
+            FROM operaciones_IOL
+            WHERE estado = 'terminada' AND tipo IN ('Compra' , 'Venta')
+            GROUP BY "cantidadOperada", "precioOperado"
+            ORDER BY fechaOperada ASC
+            
+            ''',
+            "ticker_Location":'''SELECT DISTINCT ticker
+                                FROM insertar_tabla
+                                ORDER BY ticker ASC''',
+            "price" : '''SELECT DISTINCT ticker
+                        FROM insertar_tabla
+                        ORDER BY ticker ASC'''
+            }
 
-    
     def persistir_df(self, df, table_name):
         try:
             
@@ -158,23 +181,12 @@ class Dataframe_BD():
         except Exception as e:
             print(e)
 
-    def table_query(self,table_name):
-        """ Ingresar nombre tabla y query a solicitar"""
-        col ="tipo, simbolo, fechaOperada,"
-        col_agg_func = "cantidadOperada, precioOperado"
-        # FALTA: groupbygroupb
 
-        query = '''SELECT tipo,
-                        simbolo,
-                        fechaOperada,
-                        SUM(cantidadOperada),
-                        AVG(precioOperado)
-                FROM {}
-                WHERE estado = 'terminada' AND tipo IN ('Compra' , 'Venta')
-                GROUP BY "cantidadOperada", "precioOperado"
-                ORDER BY fechaOperada ASC
-                
-                '''.format(table_name)
+
+    def table_query(self,query):
+        """ Ingresar query a solicitar del listado de query definido en este metodo
+        operaciones, ticker_location,......"""
+        
         try:
             with engine.connect() as conn:
 
@@ -184,12 +196,100 @@ class Dataframe_BD():
         except Exception as e:
             print(e)
 
+    def ticker_loc_json(self):
+        """Trae los ticker UNICOS y graba en que tabla estan
+        Realiza loop modificando nombre de la tabla en la query "ticker_Location"
+        Graba ticker_list.json un diccionario: keys son los table_name, y values list con ticker.
+        """
+        securities = ['bond','options','futures','stock','adr']
+        ticker_loc = {}
+        for sec in securities:
+            query = self.query_list['ticker_Location'].replace("insertar_tabla",sec+"_price")
+            # de query tomo la unica columna y la convierto en lista, para poder serializarlo con json
+            ticker_loc[sec+"_price"] = list(self.table_query(query).iloc[:,0])
+        
+        
+        try:
 
-# pueba de funcionamiento
+            with open('data/ticker_list.json', 'w') as json_file:
+                json.dump(ticker_loc, json_file)
+
+        except Exception as e:
+            print(e)
+            # AGREGA LOG
+    
+    def ticker_loc_check(self,ticker_price):
+        """Lectura ticker_list.json. Chequeo de los ticker en ticker_price, a 
+        que tabla de la BD corresponden
+        
+        VER COMO OPTIMIZAR"""
+        try:
+
+            with open('data/ticker_list.json') as json_file:
+                ticker_list = json.load(json_file)
+        except Exception as e:
+            print(e)
+        # chequeo de lista de ticker a que tabla corresponden.
+        table_names = []
+        for ticker in ticker_price:
+
+            for key, tick in ticker_list.items():
+                if ticker in tick:
+                    table_names.append(key)
+        return table_names
+
+        
+ 
+    def format_list_sql(self,lista):
+        """COnvierte listado en sentencia sql para chequer in
+        ('str1','str2',....)
+        """
+        sql = str("()")
+        n = len(lista)
+        for val in lista:
+            if n >1:
+                sql = sql[:1]+",'" +val +"'"+ sql[1:]
+            else:
+                sql = sql[:1]+"'" +val +"'"+ sql[1:]
+            n -=1
+        return sql
+
+
+    def ticker_price_historico(self,ticker):
+        """Con listado de ticker, trae precios historicos,
+        Devuelve df con AVG(precios) group by Fecha,ticker 
+        Los table_name los saca de la metodo ticker_loc_check que devuelve listado de los table_name
+        
+        """
+        #obtengo listado de table_names
+        table_names = self.ticker_loc_check(ticker)
+
+
+        ############### convertir LISTA TICKER EN tupla y str formato SQL
+        query_list = '''SELECT ticker, AVG(ultimo_precio), fecha
+                        FROM insertar_tabla
+                        WHERE ticker in ticker_list
+                        GROUP BY fecha ,ticker
+                        ORDER BY fecha ASC'''
+        # reemplazo ticker list por listado con formato en SQL para sentencia IN
+        query = query_list.replace('ticker_list' , self.format_list_sql(ticker))
+        df = pd.DataFrame()
+        print(table_names)
+        for table in table_names:
+            query = query.replace("insertar_tabla",table)
+            df = pd.concat([df,self.table_query(query)], axis = 0)
+        return df
+
 if __name__ == "__main__":
 
     df_bd = Dataframe_BD()
-    df = df_bd.table_query("operaciones_IOL")
-    print("\n",tabulate(df.head(20),
+    df = df_bd.ticker_price_historico(["AL29" ,"BA37D" ])
+    #df = df_bd.table_query(df_bd.query_list["operaciones"])
+    print("\n",tabulate(df,
     headers = 'keys' ,
-     tablefmt = "grid"))
+    tablefmt = "grid")
+      )
+
+    """    df_bd.ticker_loc_json()
+    res = df_bd.ticker_loc_check(["AL29" ,"BA37D" ])
+    print(res)"""
