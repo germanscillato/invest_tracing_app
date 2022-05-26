@@ -284,12 +284,15 @@ if __name__ == "__main__":
 
     df_bd = Dataframe_BD()
     df = df_bd.ticker_price_historico(["AL29" ,"BA37D" ])
-    #df = df_bd.table_query(df_bd.query_list["operaciones"])
+    df2 = df_bd.table_query(df_bd.query_list["operaciones"])
     print("\n",tabulate(df,
     headers = 'keys' ,
     tablefmt = "grid")
       )
-
+    print("\n",tabulate(df2,
+    headers = 'keys' ,
+    tablefmt = "grid")
+      )
     """    df_bd.ticker_loc_json()
     res = df_bd.ticker_loc_check(["AL29" ,"BA37D" ])
     print(res)"""
