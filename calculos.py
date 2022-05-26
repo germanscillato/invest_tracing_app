@@ -3,8 +3,11 @@
 import pandas as pd
 import re
 import numpy as np
-
 import datetime
+
+from tabulate import tabulate
+
+
 
 from operador_BD import Dataframe_BD
 
@@ -132,9 +135,12 @@ class Historic_Profit():
         # AHora voy a poner NA en valorizado, y despues lo reemplazo con el promedio.
 
         """
-        self.operations = operations
+        self.operations = operations.rename(columns={
+            "SUM(cantidadOperada)": "cantidadOperada" ,
+             "AVG(precioOperado)":"precioOperado" 
+             } )
      
-            
+
         # Nominales ventas a negativo.
         mask_venta = self.operations.tipo.isin(["Venta"])
         self.operations = self.operations.loc[ mask_venta,["cantidadOperada"]]*-1
@@ -268,7 +274,17 @@ class Day_profit(Historic_Profit):
     pass
 
 if __name__ == "__main__":
+    df_bd = Dataframe_BD()
+    operations = df_bd.table_query(df_bd.query_list["operaciones"])
+    price = df_bd.ticker_price_historico(operations["simbolo"].unique())
 
-
-
+    print("\n",tabulate(operations,
+    headers = 'keys' ,
+    tablefmt = "grid")
+      )
+    print("\n",tabulate(price.head(),
+    headers = 'keys' ,
+    tablefmt = "grid")
+      )
+    
 

@@ -41,26 +41,32 @@ class Controller():
         'adr'
         
         """
-        self.list_securities = ['bond', 'cedear','options','futures' , 'stock', 'adr']
+        self.list_securities = ['bond', 'cedear','options',
+                                'futures' , 'stock', 'adr']
         self.list_source = ["PPI", "IOL" ]
         # Verifico Securities y clases sean correctas
         if security in self.list_securities and source in self.list_source:
+            logger.debug("Pasa if con sec {} y source: {}".format(security, source))
             # Selecciono que metodo de scraper voya usar en func de la Source selecionada
             self.nombre_tabla = security+"_price"
 
             if source == "PPI":
 
                 df = self.ppi.scraper_ppi(security)
-                
+                logger.debug("scrap de {} con source: {}".format(security, source))
                 
             else:
                 df = self.iol.scraper_iol(security)
-
+                
+                logger.debug("scrap de {} con source: {}".format(security, source))
             
             try:
                 self.dataframe_BD.persistir_df(
                 df=df,
                 nombre_tabla=self.nombre_tabla)
+                logger.debug("graba de {} con source: {} en tabla: {}".format(security,
+                 source, self.nombre_tabla)
+                 )
 
             except Exception as e:
                 logger.exception('Persistir {} y source {} error: {}'.format(security,source,e))
