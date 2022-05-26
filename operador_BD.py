@@ -230,13 +230,14 @@ class Dataframe_BD():
         except Exception as e:
             print(e)
         # chequeo de lista de ticker a que tabla corresponden.
-        table_names = []
+        # utilizo set para evitar repetir valores
+        table_names = set()
         for ticker in ticker_price:
 
             for key, tick in ticker_list.items():
                 if ticker in tick:
-                    table_names.append(key)
-        return table_names
+                    table_names.add(key)
+        return list(table_names)
 
         
  
@@ -272,11 +273,12 @@ class Dataframe_BD():
                         GROUP BY fecha ,ticker
                         ORDER BY fecha ASC'''
         # reemplazo ticker list por listado con formato en SQL para sentencia IN
-        query = query_list.replace('ticker_list' , self.format_list_sql(ticker))
+        query_list = query_list.replace('ticker_list' , self.format_list_sql(ticker))
         df = pd.DataFrame()
         print(table_names)
         for table in table_names:
-            query = query.replace("insertar_tabla",table)
+            # Reemplaza query_list para evitar
+            query = query_list.replace("insertar_tabla",table)
             df = pd.concat([df,self.table_query(query)], axis = 0)
         return df
 
