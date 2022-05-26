@@ -138,23 +138,26 @@ class Dataframe_BD():
     No persiste en BD tiempo de registro
     Para leer DF"""
     def __init__(self):
-        self.query_list ={"operaciones" : '''SELECT tipo,
-                    simbolo,
-                    fechaOperada,
-                    SUM(cantidadOperada),
-                    AVG(precioOperado)
-            FROM operaciones_IOL
-            WHERE estado = 'terminada' AND tipo IN ('Compra' , 'Venta')
-            GROUP BY "cantidadOperada", "precioOperado"
-            ORDER BY fechaOperada ASC
-            
-            ''',
+        self.query_list ={
+            "operaciones" : '''SELECT tipo,
+                            simbolo,
+                            fechaOperada,
+                            SUM(cantidadOperada),
+                            AVG(precioOperado)
+                            FROM operaciones_IOL
+                            WHERE estado = 'terminada' AND tipo IN ('Compra' , 'Venta')
+                            GROUP BY "cantidadOperada", "precioOperado"
+                            ORDER BY fechaOperada ASC
+
+                            ''',
             "ticker_Location":'''SELECT DISTINCT ticker
                                 FROM insertar_tabla
                                 ORDER BY ticker ASC''',
-            "price" : '''SELECT DISTINCT ticker
+            "price" : '''SELECT ticker, AVG(ultimo_precio), fecha
                         FROM insertar_tabla
-                        ORDER BY ticker ASC'''
+                        WHERE ticker IN ticker_list 
+                        GROUP BY fecha ,ticker
+                        ORDER BY fecha ASC'''
             }
 
     def persistir_df(self, df, table_name):
@@ -264,18 +267,13 @@ class Dataframe_BD():
         """
         #obtengo listado de table_names
         table_names = self.ticker_loc_check(ticker)
-
-
-        ############### convertir LISTA TICKER EN tupla y str formato SQL
-        query_list = '''SELECT ticker, AVG(ultimo_precio), fecha
-                        FROM insertar_tabla
-                        WHERE ticker in ticker_list
-                        GROUP BY fecha ,ticker
-                        ORDER BY fecha ASC'''
+        # Trae query desde definición __init__
+        query_list = self.query_list["price"]
         # reemplazo ticker list por listado con formato en SQL para sentencia IN
         query_list = query_list.replace('ticker_list' , self.format_list_sql(ticker))
+        #Df vacío para agregar resultados
         df = pd.DataFrame()
-        print(table_names)
+        # Iteracion sobre los table_names que contienen los ticker.
         for table in table_names:
             # Reemplaza query_list para evitar
             query = query_list.replace("insertar_tabla",table)
