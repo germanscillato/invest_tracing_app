@@ -42,9 +42,6 @@ import os
 BD_path = 'sqlite:///' + os.getcwd() + '\BD.db'
 
 try:
-
-    # from sqlalchemy.orm import declarative_base    esta se usa en el docs
-
     engine = create_engine(
         BD_path,
         echo=True)
@@ -177,7 +174,8 @@ class Dataframe_BD():
                         con=conn,
                         if_exists='append',
                         index=False)
-        
+            engine.dispose()    
+
         except Exception as e:
             print(e)
 
@@ -288,7 +286,7 @@ class Dataframe_BD():
             df = pd.concat([df,self.table_query(query)], axis = 0)
         
         df["fecha"]= df["fecha"].apply(lambda x : self.str_to_date(x))
-        
+
 
         return df
 
