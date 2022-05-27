@@ -63,7 +63,7 @@ class Controller():
             try:
                 self.dataframe_BD.persistir_df(
                 df=df,
-                nombre_tabla=self.nombre_tabla)
+                table_name=self.nombre_tabla)
                 logger.debug("graba de {} con source: {} en tabla: {}".format(security,
                  source, self.nombre_tabla)
                  )
@@ -75,14 +75,14 @@ class Controller():
         else: 
             logger.exception('Cargar Security o Source correcta: {} {}'.format(security,source))
 
-
+    """
     # armar esto con herencia o decoradores
     def grabar_cot_opciones(self):
 
         try:
             self.dataframe_BD.persistir_df(
                 df=self.scraper.cotizacion_opciones(),
-                nombre_tabla="cotizacion_opciones")
+                table_name="cotizacion_opciones")
 
         except Exception as e:
             logger.exception('Grabar cotizacion opcionse: {}'.format(e))
@@ -91,7 +91,7 @@ class Controller():
 
         try:
             self.dataframe_BD.persistir_df(df=self.scraper.cotizacion_bonos(),
-                                           nombre_tabla="Cotizacion_Bonos_arg")
+                                           table_name="Cotizacion_Bonos_arg")
 
             return print("Cot bonos ejecutado - ver BD")
         except Exception as e:
@@ -102,7 +102,7 @@ class Controller():
         try:
             self.dataframe_BD.persistir_df(
                 df=self.scraper.cotizacion_acciones_arg(),
-                nombre_tabla="Cotizacion_acciones_arg")
+                table_name="Cotizacion_acciones_arg")
 
             return print("Cot acciones lider ejecutado - ver BD")
         except Exception as e:
@@ -112,7 +112,7 @@ class Controller():
 
         try:
             self.dataframe_BD.persistir_df(df=self.scraper.cotizacion_cedear(),
-                                           nombre_tabla="Cotizacion_cedear")
+                                           table_name="Cotizacion_cedear")
 
             return print("Cot Cedear ejecutado - ver BD")
         except Exception as e:
@@ -126,7 +126,7 @@ class Controller():
             return print("Cot ON arg ejecutado - ver BD")
         except Exception as e:
             print(e)
-    """
+    
     # armar esto con herencia o decoradores
 
     def portafolio_general(self):
