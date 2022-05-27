@@ -298,7 +298,7 @@ class Source_PPI(Source):
             ########### TEMPORAL PARA DEBBUNG#############
             self.df.to_csv(r'C:/python39/virtual_env/tradebot/df_ppi.csv',
                            index=False)
-            print(self.df)
+            
             ########### TEMPORAL PARA DEBBUNG FIN####################
 
             return self.df
@@ -519,7 +519,7 @@ class Source_IOL(Source):
             self.df = self.df[self.col_nombre]
             self.df.to_csv(r'C:/python39/virtual_env/tradebot/df_iol.csv',
                            index=False)
-            print(self.df)
+            
             return self.df
 
         except Exception as e:
