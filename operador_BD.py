@@ -38,7 +38,7 @@ from tabulate import tabulate
 import os
 
 
-# AUTOMATIZAR QUE ELIJA EL DIRECTORIO ACTUAL DE TRABAJO.
+# ELIJe EL DIRECTORIO ACTUAL DE TRABAJO.
 BD_path = 'sqlite:///' + os.getcwd() + '\BD.db'
 
 try:
