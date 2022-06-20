@@ -44,62 +44,62 @@ class my_thread(threading.Thread):
             logger.debug("thread:{}  Exiting: {} ".format(self.source, security ))
 
 
-if __name__ == "__main__":
-    # AGREGAR: CHEQUEO DE TICKER LIST cada 1 semana (actualizar JSON). 
-    # Chequeo de operaciones 1 vez por día a la noche. 
 
-    t_inicio = datetime.time(hour=11, minute=00, second=0)
+# AGREGAR: CHEQUEO DE TICKER LIST cada 1 semana (actualizar JSON). 
+# Chequeo de operaciones 1 vez por día a la noche. 
 
-    t_final = datetime.time(hour=17, minute=30, second=0)
+t_inicio = datetime.time(hour=11, minute=00, second=0)
 
-    ppi = Source_PPI()
-    iol = Source_IOL()
-    controller = Controller()
-    
-    
-    while True:
-            #Controller.security_selector(source= "PPI" , security= "bond")
-        dt = datetime.datetime.now()
-        logger.debug(f"started at {dt}")
+t_final = datetime.time(hour=17, minute=30, second=0)
 
-        if dt.date().weekday() != 5 | 6:
+ppi = Source_PPI()
+iol = Source_IOL()
+controller = Controller()
+
+
+while True:
+        #Controller.security_selector(source= "PPI" , security= "bond")
+    dt = datetime.datetime.now()
+    logger.debug(f"started at {dt}")
+
+    if dt.date().weekday() != 5 | 6:
+        dt = datetime.datetime.now().time()
+        while dt > t_inicio and dt < t_final:
+            # Adentro del thread no va la función con (). porque la estoy ejecutando. Va sin parentesis,que es el objeto func.
+            thread1 = my_thread(1,
+                                "IOL",
+                                controller.security_selector,
+                                "cedear",
+                                "options"  )
+            #thread2 = my_thread(2, "ON", gestor_datos.grabar_cot_ON)
+            thread3 = my_thread(3,
+                                "PPI",
+                                controller.security_selector,
+                                "bond", 
+                                "adr" , 
+                                "futures",
+                                "stock")
+
+            thread1.start()
+            # thread2.start()
+            thread3.start()
+            thread1.join()  # esperamos que thread termine de ejecutar para finalizar programa
+            # thread2.join()
+            thread3.join()
+            logger.debug("listo terminado thread ppal")
+            
+
+            time.sleep(30*60)
+            logger.debug(f"Nuevo loop en {dt}") 
             dt = datetime.datetime.now().time()
-            while dt > t_inicio and dt < t_final:
-                # Adentro del thread no va la función con (). porque la estoy ejecutando. Va sin parentesis,que es el objeto func.
-                thread1 = my_thread(1,
-                                    "IOL",
-                                    controller.security_selector,
-                                    "cedear",
-                                    "options"  )
-                #thread2 = my_thread(2, "ON", gestor_datos.grabar_cot_ON)
-                thread3 = my_thread(3,
-                                    "PPI",
-                                    controller.security_selector,
-                                    "bond", 
-                                    "adr" , 
-                                    "futures",
-                                    "stock")
 
-                thread1.start()
-                # thread2.start()
-                thread3.start()
-                thread1.join()  # esperamos que thread termine de ejecutar para finalizar programa
-                # thread2.join()
-                thread3.join()
-                logger.debug("listo terminado thread ppal")
-                
-
-                time.sleep(30*60)
-                logger.debug(f"Nuevo loop en {dt}") 
-                dt = datetime.datetime.now().time()
-
-            else:
-                logger.debug(f"Terminó en {dt}")
-                logger.debug("Horario no Bursatil")
-                # duerme 1 hora y verifica que inicie tiempo bursatil
-                time.sleep(60*60)
         else:
-            # Duerme 8 hs, para no pasarme por si es un domingo
-            logger.debug("durmiendo, horario finde")
-            time.sleep(8*60*60)
+            logger.debug(f"Terminó en {dt}")
+            logger.debug("Horario no Bursatil")
+            # duerme 1 hora y verifica que inicie tiempo bursatil
+            time.sleep(60*60)
+    else:
+        # Duerme 8 hs, para no pasarme por si es un domingo
+        logger.debug("durmiendo, horario finde")
+        time.sleep(8*60*60)
 

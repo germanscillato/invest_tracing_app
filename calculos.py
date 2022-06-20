@@ -227,7 +227,8 @@ class Historic_Profit():
                                     aggfunc =  {"Precio":"mean"} )
 
 
-        
+
+
 
         # Creo fila valorizado para grabar las sumas de los nominales*cotizacion
         self.df['valorizado'] = 0

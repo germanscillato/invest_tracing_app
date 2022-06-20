@@ -6,7 +6,7 @@ from operador_BD import Dataframe_BD
 from scraper import Source_PPI ,Source_IOL
 
 
-
+from utils import formato_fecha
 #### CONFIG LOGGING ########
 import logging
 
@@ -48,7 +48,7 @@ class Controller():
         if security in self.list_securities and source in self.list_source:
             logger.debug("Pasa if con sec {} y source: {}".format(security, source))
             # Selecciono que metodo de scraper voya usar en func de la Source selecionada
-            self.nombre_tabla = security+"_price"
+            
 
             if source == "PPI":
 
@@ -61,11 +61,12 @@ class Controller():
                 logger.debug("scrap de {} con source: {}".format(security, source))
             
             try:
+                nombre_tabla = security+"_price"
                 self.dataframe_BD.persistir_df(
                 df=df,
-                table_name=self.nombre_tabla)
+                table_name=nombre_tabla)
                 logger.debug("graba de {} con source: {} en tabla: {}".format(security,
-                 source, self.nombre_tabla)
+                 source, nombre_tabla)
                  )
 
             except Exception as e:
@@ -146,10 +147,20 @@ class Controller():
         # instancio lo necesario
         self.broker = IOL_broker()
 
-    def importar_csv_pf(self, archivo_csv):
+    def importar_csv_BD(self, archivo_csv_cot):
+        """Acomodar importanción de func formato fehca, que sea de utils"""
         # importar el csv solicitado
-        df = pd.read_csv(archivo_csv, sep=";")
+        df = pd.read_csv(archivo_csv_cot, sep=";")
+        #Agregar columnas para coincidir con BD
+        col_nombre = [
+            "plazo", "caja_punta_cc",
+            "caja_punta_pc", "caja_punta_cv", "caja_punta_pv", "volumen",
+            "open", "max", "min", "precio_anterior"   ]
+        df[col_nombre] = 0
+        df["fecha"] = df["fecha"].apply(lambda x: formato_fecha(x))
         return df
+
+
 
     def importar_csv_multiple(self, direccion_path):
 
@@ -210,8 +221,17 @@ class Visualizacion():
 if __name__ == "__main__":
     # HACER ESTO MISMO PERO VERIFICANDO LA ULTIMA QUE NO ESTE. 1 vez pordia
     Controller = Controller()
+    df = Controller.importar_csv_BD(r'C:\python39\virtual_env\i_app\data\cedear_202205.csv')
+    print(df)
+    Controller.dataframe_BD.persistir_df(df=df,
+     table_name= "cedear_price_prueba")
+    
+
+
+    """
     Controller.Activar_Broker()
     df = Controller.operaciones_api()
     Controller.dataframe_BD.persistir_df(df=df,
      table_name= "operaciones_IOL")
 
+"""
